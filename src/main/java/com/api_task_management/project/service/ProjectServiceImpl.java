@@ -3,16 +3,21 @@ package com.api_task_management.project.service;
 import com.api_task_management.common.exception.BusinessException;
 import com.api_task_management.common.exception.ResourceAlreadyExistsException;
 import com.api_task_management.common.exception.ResourceNotFoundException;
+import com.api_task_management.common.response.PageResponse;
 import com.api_task_management.project.dto.request.CreateProjectRequest;
 import com.api_task_management.project.dto.response.ProjectResponse;
 import com.api_task_management.project.dto.type.ProjectStatus;
 import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.project.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
+import java.util.List;
 
 
 @Service
@@ -70,4 +75,81 @@ public class ProjectServiceImpl implements ProjectService{
 
         return toResponse(project);
     }
+
+//    @Override
+//    public Page<ProjectResponse> getAllProjects() {
+//        Pageable pageable = PageRequest.of(0,2);
+//        Page<ProjectEntity> projects = projectRepository.findAll(pageable);
+////       return  projectRepository.findAll(pageable);
+//
+////        ProjectResponse pr = new ProjectResponse();
+////
+////
+////        return projects.map(this::toResponse);
+//
+////        List<ProjectResponse> responses = projects.getContent().stream().map(res -> toResponse(res)).toList();
+////
+//        List<ProjectResponse> response = projects.getContent().stream().map(project -> {
+//            ProjectResponse resp = new ProjectResponse();
+//
+//            resp.setId(project.getId());
+//            resp.setName(project.getName());
+//            resp.setDescription(project.getDescription());
+//            resp.setStatus(project.getStatus());
+//            resp.setStartDate(project.getStartDate());
+//            resp.setEndDate(project.getEndDate());
+//            resp.setCreatedAt(project.getCreatedAt());
+//            resp.setUpdatedAt(project.getUpdatedAt());
+//
+//            return resp;
+//
+//        }).toList();
+////
+////        return List.of(pr);
+//        return new PageImpl<>(
+//                response,
+//                projects.getPageable(),
+//                projects.getTotalElements()
+//        );
+//    }
+
+
+@Override
+public PageResponse<ProjectResponse> getAllProjects() {
+    Pageable pageable = PageRequest.of(0,2);
+    Page<ProjectEntity> projects = projectRepository.findAll(pageable);
+    List<ProjectResponse> response = projects.getContent().stream().map(project -> {
+        ProjectResponse resp = new ProjectResponse();
+
+        resp.setId(project.getId());
+        resp.setName(project.getName());
+        resp.setDescription(project.getDescription());
+        resp.setStatus(project.getStatus());
+        resp.setStartDate(project.getStartDate());
+        resp.setEndDate(project.getEndDate());
+        resp.setCreatedAt(project.getCreatedAt());
+        resp.setUpdatedAt(project.getUpdatedAt());
+
+        return resp;
+
+    }).toList();
+
+//    return new PageImpl<>(
+//            response,
+//            projects.getPageable(),
+//            projects.getTotalElements()
+//    );
+
+    return new PageResponse<>(
+            response,
+            projects.getNumber(),
+            projects.getSize(),
+            projects.getTotalElements(),
+            projects.getTotalPages(),
+            projects.hasNext(),
+            projects.hasPrevious()
+    );
+}
+
+
 }

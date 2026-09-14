@@ -1,12 +1,15 @@
 package com.api_task_management.project.controller;
 
 import com.api_task_management.common.advice.ApiResponse;
+import com.api_task_management.common.response.PageResponse;
 import com.api_task_management.project.dto.request.CreateProjectRequest;
 import com.api_task_management.project.dto.response.ProjectResponse;
+import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.project.service.ProjectService;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -46,6 +49,16 @@ public class ProjectController {
                 true,
                 "Project fetched successfully !",
                 response
+        );
+    }
+
+    @GetMapping
+    public ApiResponse<PageResponse<ProjectResponse>> getAllProjects() {
+        PageResponse<ProjectResponse> projects = projectService.getAllProjects();
+        return new ApiResponse<>(
+                true,
+                "tes",
+                projects
         );
     }
 }
