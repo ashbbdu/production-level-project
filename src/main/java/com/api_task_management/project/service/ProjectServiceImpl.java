@@ -1,5 +1,6 @@
 package com.api_task_management.project.service;
 
+import com.api_task_management.common.exception.BusinessException;
 import com.api_task_management.common.exception.ResourceAlreadyExistsException;
 import com.api_task_management.project.dto.request.CreateProjectRequest;
 import com.api_task_management.project.dto.response.ProjectResponse;
@@ -24,7 +25,7 @@ public class ProjectServiceImpl implements ProjectService{
         }
 
         if(request.getEndDate() != null && request.getEndDate().isBefore(request.getStartDate())) {
-            throw new IllegalArgumentException("End date can not be before start date !");
+            throw new BusinessException("End date can not be before start date !");
         }
 
         ProjectEntity project = new ProjectEntity();
