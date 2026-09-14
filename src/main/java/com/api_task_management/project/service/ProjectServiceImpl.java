@@ -2,6 +2,7 @@ package com.api_task_management.project.service;
 
 import com.api_task_management.common.exception.BusinessException;
 import com.api_task_management.common.exception.ResourceAlreadyExistsException;
+import com.api_task_management.common.exception.ResourceNotFoundException;
 import com.api_task_management.project.dto.request.CreateProjectRequest;
 import com.api_task_management.project.dto.response.ProjectResponse;
 import com.api_task_management.project.dto.type.ProjectStatus;
@@ -11,10 +12,28 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+
+
 @Service
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService{
     private final ProjectRepository projectRepository;
+    private ProjectResponse toResponse(ProjectEntity project) {
+        ProjectResponse response = new ProjectResponse();
+        response.setId(project.getId());
+        response.setName(project.getName());
+        response.setDescription(project.getDescription());
+        response.setStatus(project.getStatus());
+        response.setStartDate(project.getStartDate());
+        response.setEndDate(project.getEndDate());
+        response.setCreatedAt(project.getCreatedAt());
+        response.setUpdatedAt(project.getUpdatedAt());
+
+        return response;
+    }
+
+
 
     @Override
     @Transactional
@@ -37,16 +56,18 @@ public class ProjectServiceImpl implements ProjectService{
 
         ProjectEntity savedProject = projectRepository.save(project);
 
-        ProjectResponse response = new ProjectResponse();
-        response.setId(savedProject.getId());
-        response.setName(savedProject.getName());
-        response.setDescription(savedProject.getDescription());
-        response.setStatus(savedProject.getStatus());
-        response.setStartDate(savedProject.getStartDate());
-        response.setEndDate(savedProject.getEndDate());
-        response.setCreatedAt(savedProject.getCreatedAt());
-        response.setUpdatedAt(savedProject.getUpdatedAt());
 
-        return response;
+
+
+        return toResponse(savedProject);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProjectResponse getProjectById(Long projectId) {
+        ProjectEntity project = projectRepository.findById(projectId).orElseThrow(() ->
+                new ResourceNotFoundException("Project with id " + projectId + " not found !"));
+
+        return toResponse(project);
     }
 }

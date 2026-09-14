@@ -5,4 +5,5 @@ import com.api_task_management.project.dto.response.ProjectResponse;
 
 public interface ProjectService {
     public ProjectResponse createProject (CreateProjectRequest request);
+    public ProjectResponse getProjectById(Long projectId);
 }
