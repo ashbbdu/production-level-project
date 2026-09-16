@@ -10,10 +10,7 @@ import com.api_task_management.project.dto.type.ProjectStatus;
 import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.project.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -115,8 +112,9 @@ public class ProjectServiceImpl implements ProjectService{
 
 
 @Override
-public PageResponse<ProjectResponse> getAllProjects() {
-    Pageable pageable = PageRequest.of(0,2);
+public PageResponse<ProjectResponse> getAllProjects(Pageable pageable) {
+//    Sort sort = Sort.by("name").ascending();
+//    Pageable pageable = PageRequest.of(page,size , Sort.by("name").descending());
     Page<ProjectEntity> projects = projectRepository.findAll(pageable);
     List<ProjectResponse> response = projects.getContent().stream().map(project -> {
         ProjectResponse resp = new ProjectResponse();

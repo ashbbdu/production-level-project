@@ -10,6 +10,9 @@ import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -53,8 +56,15 @@ public class ProjectController {
     }
 
     @GetMapping
-    public ApiResponse<PageResponse<ProjectResponse>> getAllProjects() {
-        PageResponse<ProjectResponse> projects = projectService.getAllProjects();
+    public ApiResponse<PageResponse<ProjectResponse>> getAllProjects(
+//                @RequestParam(defaultValue = "0")  int page
+//            , @RequestParam(defaultValue = "10") int size)  instead of passing this getAllProjects(page , size) we will pass Pageable
+
+            @PageableDefault(size = 10 , page = 0 , sort = "createdAt" , direction = Sort.Direction.ASC)
+            Pageable page // this is required
+            )
+    {
+        PageResponse<ProjectResponse> projects = projectService.getAllProjects(page);
         return new ApiResponse<>(
                 true,
                 "tes",

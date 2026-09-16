@@ -13,6 +13,6 @@ public interface ProjectService {
     public ProjectResponse createProject (CreateProjectRequest request);
     public ProjectResponse getProjectById(Long projectId);
 //  public List<ProjectResponse> getAllProjects();
-    public PageResponse<ProjectResponse> getAllProjects();
+    public PageResponse<ProjectResponse> getAllProjects(Pageable pageable);
 
 }
