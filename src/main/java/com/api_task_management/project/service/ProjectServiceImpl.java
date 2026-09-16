@@ -112,10 +112,21 @@ public class ProjectServiceImpl implements ProjectService{
 
 
 @Override
-public PageResponse<ProjectResponse> getAllProjects(Pageable pageable) {
+public PageResponse<ProjectResponse> getAllProjects (String name , ProjectStatus status , Pageable pageable) {
 //    Sort sort = Sort.by("name").ascending();
 //    Pageable pageable = PageRequest.of(page,size , Sort.by("name").descending());
-    Page<ProjectEntity> projects = projectRepository.findAll(pageable);
+    Page<ProjectEntity> projects;
+
+    if(status != null && name != null) {
+        System.out.println("1");
+        projects = projectRepository.findAllByNameAndStatus(name, status ,pageable);
+    } else if (status != null) {
+        projects = projectRepository.findByStatus(status ,pageable);
+    } else {
+        System.out.println("3");
+        projects  = projectRepository.findAll(pageable);
+    }
+
     List<ProjectResponse> response = projects.getContent().stream().map(project -> {
         ProjectResponse resp = new ProjectResponse();
 

@@ -4,6 +4,7 @@ import com.api_task_management.common.advice.ApiResponse;
 import com.api_task_management.common.response.PageResponse;
 import com.api_task_management.project.dto.request.CreateProjectRequest;
 import com.api_task_management.project.dto.response.ProjectResponse;
+import com.api_task_management.project.dto.type.ProjectStatus;
 import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.project.service.ProjectService;
 import jakarta.validation.Valid;
@@ -60,11 +61,13 @@ public class ProjectController {
 //                @RequestParam(defaultValue = "0")  int page
 //            , @RequestParam(defaultValue = "10") int size)  instead of passing this getAllProjects(page , size) we will pass Pageable
 
-            @PageableDefault(size = 10 , page = 0 , sort = "createdAt" , direction = Sort.Direction.ASC)
-            Pageable page // this is required
+            @PageableDefault(size = 10 , page = 0 , sort = "createdAt" , direction = Sort.Direction.ASC) Pageable page,
+            @RequestParam(required = false) ProjectStatus status,
+            @RequestParam(required = false) String name
+
             )
     {
-        PageResponse<ProjectResponse> projects = projectService.getAllProjects(page);
+        PageResponse<ProjectResponse> projects = projectService.getAllProjects(name, status , page);
         return new ApiResponse<>(
                 true,
                 "tes",
