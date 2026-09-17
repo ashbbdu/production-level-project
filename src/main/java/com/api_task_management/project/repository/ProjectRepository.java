@@ -7,9 +7,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
-public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
+public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> ,
+        JpaSpecificationExecutor<ProjectEntity> {
     public boolean existsByName(String name);
 
 //    public Page<ProjectEntity> findAll(Pageable pageable);

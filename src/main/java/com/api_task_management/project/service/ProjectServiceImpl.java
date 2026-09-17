@@ -5,12 +5,15 @@ import com.api_task_management.common.exception.ResourceAlreadyExistsException;
 import com.api_task_management.common.exception.ResourceNotFoundException;
 import com.api_task_management.common.response.PageResponse;
 import com.api_task_management.project.dto.request.CreateProjectRequest;
+import com.api_task_management.project.dto.request.ProjectFilterRequest;
 import com.api_task_management.project.dto.response.ProjectResponse;
 import com.api_task_management.project.dto.type.ProjectStatus;
 import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.project.repository.ProjectRepository;
+import com.api_task_management.project.repository.ProjectSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -112,20 +115,37 @@ public class ProjectServiceImpl implements ProjectService{
 
 
 @Override
-public PageResponse<ProjectResponse> getAllProjects (String name , ProjectStatus status , Pageable pageable) {
+public PageResponse<ProjectResponse> getAllProjects (ProjectFilterRequest filter , Pageable pageable) {
 //    Sort sort = Sort.by("name").ascending();
 //    Pageable pageable = PageRequest.of(page,size , Sort.by("name").descending());
-    Page<ProjectEntity> projects;
 
-    if(status != null && name != null) {
-        System.out.println("1");
-        projects = projectRepository.findAllByNameAndStatus(name, status ,pageable);
-    } else if (status != null) {
-        projects = projectRepository.findByStatus(status ,pageable);
-    } else {
-        System.out.println("3");
-        projects  = projectRepository.findAll(pageable);
+    if(filter.getStartDateFrom() != null
+            && filter.getStartDateTo() != null
+            && filter.getStartDateFrom().isAfter(filter.getStartDateTo())) {
+        throw new BusinessException("startDateFrom cannot be after startDateTo");
     }
+
+    if (pageable.getPageSize() > 100) {
+        throw new BusinessException(
+                "Page size cannot exceed 100"
+        );
+    }
+
+
+    Specification<ProjectEntity> specification =
+            ProjectSpecification.filter(filter);
+
+    Page<ProjectEntity> projects = projectRepository.findAll(specification ,pageable);
+
+//    if(status != null && name != null) {
+//        System.out.println("1");
+//        projects = projectRepository.findAllByNameAndStatus(name, status ,pageable);
+//    } else if (status != null) {
+//        projects = projectRepository.findByStatus(status ,pageable);
+//    } else {
+//        System.out.println("3");
+//        projects  = projectRepository.findAll(pageable);
+//    }
 
     List<ProjectResponse> response = projects.getContent().stream().map(project -> {
         ProjectResponse resp = new ProjectResponse();
