@@ -4,8 +4,10 @@ import com.api_task_management.common.exception.BusinessException;
 import com.api_task_management.common.exception.ResourceAlreadyExistsException;
 import com.api_task_management.common.exception.ResourceNotFoundException;
 import com.api_task_management.common.response.PageResponse;
+import com.api_task_management.project.constant.ProjectSortFields;
 import com.api_task_management.project.dto.request.CreateProjectRequest;
 import com.api_task_management.project.dto.request.ProjectFilterRequest;
+import com.api_task_management.project.dto.request.UpdateProjectRequest;
 import com.api_task_management.project.dto.response.ProjectResponse;
 import com.api_task_management.project.dto.type.ProjectStatus;
 import com.api_task_management.project.entity.ProjectEntity;
@@ -17,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -24,6 +27,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService{
     private final ProjectRepository projectRepository;
+
+
+
     private ProjectResponse toResponse(ProjectEntity project) {
         ProjectResponse response = new ProjectResponse();
         response.setId(project.getId());
@@ -39,6 +45,17 @@ public class ProjectServiceImpl implements ProjectService{
     }
 
 
+    private void validateSort(Pageable pageable) {
+
+        for (Sort.Order order : pageable.getSort()) {
+
+            if (!ProjectSortFields.ALLOWED_FIELDS.contains(order.getProperty())) {
+                throw new BusinessException(
+                        "Sorting by '" + order.getProperty() + "' is not allowed"
+                );
+            }
+        }
+    }
 
     @Override
     @Transactional
@@ -119,11 +136,14 @@ public PageResponse<ProjectResponse> getAllProjects (ProjectFilterRequest filter
 //    Sort sort = Sort.by("name").ascending();
 //    Pageable pageable = PageRequest.of(page,size , Sort.by("name").descending());
 
+
     if(filter.getStartDateFrom() != null
             && filter.getStartDateTo() != null
             && filter.getStartDateFrom().isAfter(filter.getStartDateTo())) {
         throw new BusinessException("startDateFrom cannot be after startDateTo");
     }
+
+    validateSort(pageable);
 
     if (pageable.getPageSize() > 100) {
         throw new BusinessException(
@@ -180,5 +200,83 @@ public PageResponse<ProjectResponse> getAllProjects (ProjectFilterRequest filter
     );
 }
 
+    @Override
+    @Transactional
+    public ProjectResponse updateProject(
+            Long projectId,
+            UpdateProjectRequest request) {
+
+        ProjectEntity project =
+                projectRepository.findById(projectId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Project with id : "
+                                                + projectId
+                                                + " does not exist!"
+                                )
+                        );
+        if (request.getName() != null) {
+
+            if (!request.getName().equals(project.getName())
+                    && projectRepository.existsByName(
+                    request.getName())) {
+
+                throw new ResourceAlreadyExistsException(
+                        "Project with this name already exists!"
+                );
+            }
+        }
+
+
+        LocalDateTime newStartDate =
+                request.getStartDate() != null
+                        ? request.getStartDate()
+                        : project.getStartDate();
+
+        LocalDateTime newEndDate =
+                request.getEndDate() != null
+                        ? request.getEndDate()
+                        : project.getEndDate();
+
+        if (newEndDate != null
+                && newEndDate.isBefore(newStartDate)) {
+
+            throw new BusinessException(
+                    "End date cannot be before start date!"
+            );
+        }
+
+
+        if (request.getName() != null) {
+            project.setName(request.getName());
+        }
+
+        if (request.getDescription() != null) {
+            project.setDescription(request.getDescription());
+        }
+
+        if (request.getStartDate() != null) {
+            project.setStartDate(request.getStartDate());
+        }
+
+        if (request.getEndDate() != null) {
+            project.setEndDate(request.getEndDate());
+        }
+
+        if (request.getStatus() != null) {
+            project.setStatus(request.getStatus());
+        }
+
+        return toResponse(project);
+    }
+
+    private void validatePagination(Pageable pageable) {
+
+        if (pageable.getPageSize() > 100) {
+            throw new BusinessException(
+                    "Page size cannot exceed 100"
+            );
+        }
+    }
 
 }
