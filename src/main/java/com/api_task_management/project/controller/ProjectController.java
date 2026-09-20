@@ -4,6 +4,7 @@ import com.api_task_management.common.advice.ApiResponse;
 import com.api_task_management.common.response.PageResponse;
 import com.api_task_management.project.dto.request.CreateProjectRequest;
 import com.api_task_management.project.dto.request.ProjectFilterRequest;
+import com.api_task_management.project.dto.request.UpdateProjectRequest;
 import com.api_task_management.project.dto.response.ProjectResponse;
 import com.api_task_management.project.dto.type.ProjectStatus;
 import com.api_task_management.project.entity.ProjectEntity;
@@ -75,5 +76,14 @@ public class ProjectController {
                 "tes",
                 projects
         );
+    }
+
+    @PatchMapping(path = "/{projectId}")
+    public ApiResponse<ProjectResponse> updateProject (@PathVariable Long projectId ,
+                                                                     @RequestBody @Valid UpdateProjectRequest request) {
+        ProjectResponse updatedProject = projectService.updateProject(projectId , request);
+
+//        ApiResponse<ProjectResponse> response = new ApiResponse<>(true , "Project Updated Successfully !" ,updatedProject);
+        return new ApiResponse<>(true , "Project Updated Successfully !" ,updatedProject);
     }
 }

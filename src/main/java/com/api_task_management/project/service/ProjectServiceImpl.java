@@ -57,6 +57,31 @@ public class ProjectServiceImpl implements ProjectService{
         }
     }
 
+    private void validateStatusTransition(
+            ProjectStatus currentStatus,
+            ProjectStatus newStatus) {
+
+        if (currentStatus == newStatus) {
+            return;
+        }
+
+        boolean validTransition = switch (currentStatus) {
+            case PLANNED -> newStatus == ProjectStatus.ACTIVE;
+            case ACTIVE -> newStatus == ProjectStatus.COMPLETED;
+            case COMPLETED -> newStatus == ProjectStatus.ARCHIVED;
+            case ARCHIVED -> false;
+        };
+
+        if (!validTransition) {
+            throw new BusinessException(
+                    "Invalid project status transition from "
+                            + currentStatus
+                            + " to "
+                            + newStatus
+            );
+        }
+    }
+
     @Override
     @Transactional
     public ProjectResponse createProject(CreateProjectRequest request) {
@@ -264,6 +289,12 @@ public PageResponse<ProjectResponse> getAllProjects (ProjectFilterRequest filter
         }
 
         if (request.getStatus() != null) {
+
+            validateStatusTransition(
+                    project.getStatus(),
+                    request.getStatus()
+            );
+
             project.setStatus(request.getStatus());
         }
 
