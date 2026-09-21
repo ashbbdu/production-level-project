@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -58,7 +60,7 @@ public class TaskController {
             (@PathVariable Long projectId ,
 //             @RequestParam(defaultValue = "0") int page,
 //             @RequestParam(defaultValue = "10") int size
-             Pageable pageable
+              @PageableDefault(page = 0 , size = 10 , sort = "createdAt" , direction = Sort.Direction.ASC) Pageable pageable
 
             ) {
 
