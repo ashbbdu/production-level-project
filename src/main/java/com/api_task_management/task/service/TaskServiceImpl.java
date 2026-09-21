@@ -1,4 +1,150 @@
 package com.api_task_management.task.service;
 
+import com.api_task_management.common.advice.ApiResponse;
+import com.api_task_management.common.exception.ResourceNotFoundException;
+import com.api_task_management.common.response.PageResponse;
+import com.api_task_management.project.entity.ProjectEntity;
+import com.api_task_management.project.repository.ProjectRepository;
+import com.api_task_management.task.dto.request.CreateTaskRequest;
+import com.api_task_management.task.dto.response.TaskResponse;
+import com.api_task_management.task.entity.TaskEntity;
+import com.api_task_management.task.repository.TaskRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
+    private final TaskRepository taskRepository;
+    private final ProjectRepository projectRepository;
+
+    public TaskResponse toResponse (TaskEntity task) {
+        TaskResponse response = new TaskResponse();
+        response.setId(task.getId());
+        response.setTitle(task.getTitle());
+        response.setDescription(task.getDescription());
+        response.setStatus(task.getStatus());
+        response.setPriority(task.getPriority());
+        response.setDueDate(task.getDueDate());
+        response.setCreatedAt(task.getCreatedAt());
+        response.setUpdatedAt(task.getUpdatedAt());
+
+        return response;
+    }
+
+    @Transactional
+    @Override
+    public TaskResponse createTask(CreateTaskRequest request, Long projectId) {
+        ProjectEntity project = projectRepository.findById(projectId).orElseThrow(()
+                -> new ResourceNotFoundException("Project with id : " + projectId + " not found"));
+
+        TaskEntity task = new TaskEntity();
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        task.setDueDate(request.getDueDate());
+        task.setProject(project);
+
+        TaskEntity savedTask = taskRepository.save(task);
+
+        return toResponse(savedTask);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TaskResponse getTaskById(Long taskId) {
+
+        TaskEntity task = taskRepository.findById(taskId).orElseThrow(() ->
+                new ResourceNotFoundException("Task with id : " + taskId + " not found"));
+
+        return toResponse(task);
+    }
+
+//    @Override
+//    public PageResponse<TaskResponse> getTasksByProjectId(Long projectId) {
+//        ProjectEntity projects = projectRepository.findById(projectId).orElseThrow(() ->
+//                new ResourceNotFoundException("Not found")
+//                );
+//
+//        Pageable pageable = PageRequest.of(0, 10);
+//        List<TaskEntity> tasks = projects.getTasks();
+//
+//        Page<TaskEntity> taskPage = new PageImpl<>(
+//                tasks,
+//                pageable,
+//                tasks.size()
+//        );
+//
+//
+//        List<TaskResponse> response = new ArrayList<>();
+//        for (var t : tasks) {
+//            response.add(toResponse(t));
+//        }
+//
+//        PageResponse<TaskResponse> pr = new PageResponse<>(
+//                response,
+//                taskPage.getNumber(),
+//                taskPage.getSize(),
+//                taskPage.getTotalElements(),
+//                taskPage.getTotalPages(),
+//                taskPage.hasNext(),
+//                taskPage.hasPrevious()
+//
+//
+//        );
+//        return pr;
+//    }
+
+    @Override
+    public PageResponse<TaskResponse> getTasksByProjectId(Long projectId , Pageable pageable) {
+        ProjectEntity projects = projectRepository.findById(projectId).orElseThrow(() ->
+                new ResourceNotFoundException("Not found")
+        );
+
+//        Pageable pageable = PageRequest.of(page, size);
+//        List<TaskEntity> tasks = projects.getTasks();
+        Page<TaskEntity> tasks = taskRepository.findByProjectId(projectId , pageable);
+//
+//        Page<TaskEntity> taskPage = new PageImpl<>(
+//                tasks,
+//                pageable,
+//                tasks.size()
+//        );
+
+
+        List<TaskResponse> response = new ArrayList<>();
+        for (var t : tasks) {
+            response.add(toResponse(t));
+        }
+
+//        PageResponse<TaskResponse> pr = new PageResponse<>(
+//                response,
+//                tasks.getNumber(),
+//                tasks.getSize(),
+//                tasks.getTotalElements(),
+//                tasks.getTotalPages(),
+//                tasks.hasNext(),
+//                tasks.hasPrevious()
+//
+//
+//        );
+        return new PageResponse<>(
+                response,
+                tasks.getNumber(),
+                tasks.getSize(),
+                tasks.getTotalElements(),
+                tasks.getTotalPages(),
+                tasks.hasNext(),
+                tasks.hasPrevious()
+
+
+        );
+    }
 }
