@@ -5,6 +5,8 @@ import com.api_task_management.task.dto.type.TaskPriority;
 import com.api_task_management.task.dto.type.TaskStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -12,6 +14,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
+@Getter
+@Setter
 public class TaskEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
