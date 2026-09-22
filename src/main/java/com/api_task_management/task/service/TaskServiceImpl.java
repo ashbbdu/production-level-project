@@ -1,19 +1,18 @@
 package com.api_task_management.task.service;
 
 import com.api_task_management.common.advice.ApiResponse;
+import com.api_task_management.common.exception.BusinessException;
 import com.api_task_management.common.exception.ResourceNotFoundException;
 import com.api_task_management.common.response.PageResponse;
 import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.project.repository.ProjectRepository;
+import com.api_task_management.task.constant.TaskSortFields;
 import com.api_task_management.task.dto.request.CreateTaskRequest;
 import com.api_task_management.task.dto.response.TaskResponse;
 import com.api_task_management.task.entity.TaskEntity;
 import com.api_task_management.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +24,14 @@ import java.util.List;
 public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
+
+    private void validateSort (Pageable pageable) {
+        for(Sort.Order s : pageable.getSort()) {
+            if(!TaskSortFields.ALLOWED_FIELDS.contains(s.getProperty())) {
+                throw new BusinessException("Sorting by '" + s.getProperty() + "' is not allowed");
+            }
+        }
+    }
 
     public TaskResponse toResponse (TaskEntity task) {
         TaskResponse response = new TaskResponse();
@@ -104,9 +111,23 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public PageResponse<TaskResponse> getTasksByProjectId(Long projectId , Pageable pageable) {
+
+        if (pageable.getPageSize() > 100) {
+            throw new BusinessException(
+                    "Page size cannot exceed 100"
+            );
+        }
+
+        validateSort(pageable);
+
         ProjectEntity projects = projectRepository.findById(projectId).orElseThrow(() ->
                 new ResourceNotFoundException("Not found")
         );
+
+
+
+
+
 
 //        Pageable pageable = PageRequest.of(page, size);
 //        List<TaskEntity> tasks = projects.getTasks();
