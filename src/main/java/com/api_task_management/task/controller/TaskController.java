@@ -3,6 +3,7 @@ package com.api_task_management.task.controller;
 import com.api_task_management.common.advice.ApiResponse;
 import com.api_task_management.common.response.PageResponse;
 import com.api_task_management.task.dto.request.CreateTaskRequest;
+import com.api_task_management.task.dto.request.TaskFilterRequest;
 import com.api_task_management.task.dto.response.TaskResponse;
 import com.api_task_management.task.service.TaskService;
 import jakarta.validation.Valid;
@@ -60,14 +61,15 @@ public class TaskController {
             (@PathVariable Long projectId ,
 //             @RequestParam(defaultValue = "0") int page,
 //             @RequestParam(defaultValue = "10") int size
-              @PageableDefault(page = 0 , size = 10 , sort = "createdAt" , direction = Sort.Direction.ASC) Pageable pageable
-
+             @PageableDefault(page = 0 , size = 10 , sort = "createdAt" , direction = Sort.Direction.ASC) Pageable pageable,
+             @ModelAttribute TaskFilterRequest filter // adding this for filter functionality
             ) {
 
 //        PageResponse<TaskResponse> tasks = taskService.getTasksByProjectId(projectId , pageable.getPageNumber() , pageable.getPageSize());
-        PageResponse<TaskResponse> tasks = taskService.getTasksByProjectId(projectId , pageable);
+        PageResponse<TaskResponse> tasks = taskService.getTasksByProjectId(projectId , pageable , filter);
 
 
+//        System.out.println(filter.getPriority() + " " + filter.getStatus());
         return ResponseEntity.ok(new ApiResponse<>(
                 true,
                 "Tasks Fetched Successfully !",

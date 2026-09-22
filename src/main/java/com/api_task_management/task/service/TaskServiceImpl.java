@@ -8,6 +8,7 @@ import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.project.repository.ProjectRepository;
 import com.api_task_management.task.constant.TaskSortFields;
 import com.api_task_management.task.dto.request.CreateTaskRequest;
+import com.api_task_management.task.dto.request.TaskFilterRequest;
 import com.api_task_management.task.dto.response.TaskResponse;
 import com.api_task_management.task.entity.TaskEntity;
 import com.api_task_management.task.repository.TaskRepository;
@@ -110,7 +111,7 @@ public class TaskServiceImpl implements TaskService {
 //    }
 
     @Override
-    public PageResponse<TaskResponse> getTasksByProjectId(Long projectId , Pageable pageable) {
+    public PageResponse<TaskResponse> getTasksByProjectId(Long projectId , Pageable pageable , TaskFilterRequest filter) {
 
         if (pageable.getPageSize() > 100) {
             throw new BusinessException(

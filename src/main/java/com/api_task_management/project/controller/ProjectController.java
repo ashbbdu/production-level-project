@@ -63,7 +63,7 @@ public class ProjectController {
 //                @RequestParam(defaultValue = "0")  int page
 //            , @RequestParam(defaultValue = "10") int size)  instead of passing this getAllProjects(page , size) we will pass Pageable
 
-            ProjectFilterRequest filter,
+            @ModelAttribute ProjectFilterRequest filter,
             @PageableDefault(size = 10 , page = 0 , sort = {"createdAt" , "id"} , direction = Sort.Direction.ASC) Pageable page
 //            @RequestParam(required = false) ProjectStatus status,
 //            @RequestParam(required = false) String name
