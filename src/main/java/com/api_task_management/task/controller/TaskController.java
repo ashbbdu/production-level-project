@@ -77,4 +77,10 @@ public class TaskController {
         ));
     }
 
+
+    @GetMapping(path = "/testNPlusOne")
+    public void testNPlusOne() {
+        taskService.testNPlusOne();
+    }
+
 }

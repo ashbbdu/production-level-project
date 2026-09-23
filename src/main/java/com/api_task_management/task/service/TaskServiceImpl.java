@@ -47,6 +47,7 @@ public class TaskServiceImpl implements TaskService {
         response.setDueDate(task.getDueDate());
         response.setCreatedAt(task.getCreatedAt());
         response.setUpdatedAt(task.getUpdatedAt());
+//        response.setProjectId(task.getProject().getId());
 
         return response;
     }
@@ -151,9 +152,18 @@ public class TaskServiceImpl implements TaskService {
 //                tasks.size()
 //        );
 
+//        List<TaskEntity> tasks1 = taskRepository.findAll();
+
+//        List<TaskEntity> tasks1 = taskRepository.findAllTasks();
+//
+//        for (TaskEntity task : tasks1) {
+//            System.out.println(task.getProject().getName() + " : " + task.getTitle()) ;
+//        }
+
 
         List<TaskResponse> response = new ArrayList<>();
         for (var t : tasks) {
+            System.out.println(t.getProject().getName() + " project Namemmemme");
             response.add(toResponse(t));
         }
 
@@ -179,5 +189,18 @@ public class TaskServiceImpl implements TaskService {
 
 
         );
+    }
+
+    @Transactional(readOnly = true)
+    public void testNPlusOne() {
+
+        List<TaskEntity> tasks = taskRepository.findAllWithProject();
+
+        for (TaskEntity task : tasks) {
+            System.out.println(
+                    task.getTitle() + " -> " +
+                            task.getProject().getName()
+            );
+        }
     }
 }
