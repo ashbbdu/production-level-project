@@ -9,11 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.net.BindException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +27,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> resourceAlreadyPresentException (ResourceAlreadyExistsException ex , HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> resourceAlreadyPresentException(ResourceAlreadyExistsException ex, HttpServletRequest request) {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.CONFLICT.value(),
@@ -39,8 +41,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException (MethodArgumentNotValidException ex , HttpServletRequest request) {
-        Map<String , List<String>> fieldsErrors = new HashMap<>();
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        Map<String, List<String>> fieldsErrors = new HashMap<>();
         ex.getBindingResult()
                 .getFieldErrors()
                 .forEach(fieldError -> {
@@ -66,7 +68,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException (BusinessException ex , HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, HttpServletRequest request) {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -80,7 +82,7 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> resourceNotFountException (ResourceNotFoundException ex , HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> resourceNotFountException(ResourceNotFoundException ex, HttpServletRequest request) {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
@@ -93,7 +95,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-//    if someone is passing invalid /PathVariable
+    //    if someone is passing invalid /PathVariable
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(
             MethodArgumentTypeMismatchException ex,
@@ -115,7 +117,7 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-//    if someone is passing invalid json
+    //    if someone is passing invalid json
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleMessageNotReadable(
             HttpMessageNotReadableException ex,
@@ -158,9 +160,10 @@ public class GlobalExceptionHandler {
         );
 
 
-
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(error);
     }
+
+
 }

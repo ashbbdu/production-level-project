@@ -6,14 +6,17 @@ import com.api_task_management.common.exception.ResourceNotFoundException;
 import com.api_task_management.common.response.PageResponse;
 import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.project.repository.ProjectRepository;
+import com.api_task_management.project.repository.ProjectSpecification;
 import com.api_task_management.task.constant.TaskSortFields;
 import com.api_task_management.task.dto.request.CreateTaskRequest;
 import com.api_task_management.task.dto.request.TaskFilterRequest;
 import com.api_task_management.task.dto.response.TaskResponse;
 import com.api_task_management.task.entity.TaskEntity;
 import com.api_task_management.task.repository.TaskRepository;
+import com.api_task_management.task.specification.TaskSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -132,7 +135,15 @@ public class TaskServiceImpl implements TaskService {
 
 //        Pageable pageable = PageRequest.of(page, size);
 //        List<TaskEntity> tasks = projects.getTasks();
-        Page<TaskEntity> tasks = taskRepository.findByProjectId(projectId , pageable);
+
+//        now to support specification we need to pass specification instead of projectId;
+//        Page<TaskEntity> tasks = taskRepository.findByProjectId(projectId , pageable);
+        Specification<TaskEntity> specification =
+                TaskSpecification.filter(projectId , filter);
+//        Page<TaskEntity> tasks = taskRepository.findByProjectId(specification , pageable);
+
+//        not using findByProjectId because it does not support specification
+        Page<TaskEntity> tasks = taskRepository.findAll(specification , pageable);
 //
 //        Page<TaskEntity> taskPage = new PageImpl<>(
 //                tasks,
