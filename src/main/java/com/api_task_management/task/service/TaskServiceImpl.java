@@ -3,13 +3,17 @@ package com.api_task_management.task.service;
 import com.api_task_management.common.exception.BusinessException;
 import com.api_task_management.common.exception.ResourceNotFoundException;
 import com.api_task_management.common.response.PageResponse;
+import com.api_task_management.project.dto.type.ProjectStatus;
 import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.project.repository.ProjectRepository;
 import com.api_task_management.task.constant.TaskSortFields;
 import com.api_task_management.task.dto.request.CreateTaskRequest;
 import com.api_task_management.task.dto.request.TaskFilterRequest;
+import com.api_task_management.task.dto.request.UpdateTaskRequest;
 import com.api_task_management.task.dto.response.TaskListResponse;
 import com.api_task_management.task.dto.response.TaskResponse;
+import com.api_task_management.task.dto.type.TaskPriority;
+import com.api_task_management.task.dto.type.TaskStatus;
 import com.api_task_management.task.entity.TaskEntity;
 import com.api_task_management.task.repository.TaskRepository;
 import com.api_task_management.task.specification.TaskSpecification;
@@ -49,6 +53,25 @@ public class TaskServiceImpl implements TaskService {
         response.setProjectId(task.getProject().getId());
 
         return response;
+    }
+
+    public void taskStatusTransition (TaskStatus currentStatus , TaskStatus requestedStatus) {
+       boolean validateStatusTransition = switch (currentStatus) {
+            case TODO -> requestedStatus == TaskStatus.IN_PROGRESS  || requestedStatus == TaskStatus.CANCELLED;
+
+            case IN_PROGRESS -> requestedStatus == TaskStatus.COMPLETED  || requestedStatus == TaskStatus.CANCELLED;
+
+           case COMPLETED , CANCELLED -> false;
+        };
+
+       if(!validateStatusTransition) {
+           throw new BusinessException(
+                   "Invalid task status transition: "
+                           + currentStatus
+                           + " -> "
+                           + requestedStatus
+           );
+       }
     }
 
     @Transactional
@@ -308,5 +331,41 @@ public PageResponse<TaskListResponse> getTasksByProjectId(
                 tasks.hasNext(),
                 tasks.hasPrevious()
         );
+    }
+
+    @Override
+    @Transactional
+    public TaskResponse updateTask(Long taskId, UpdateTaskRequest request) {
+
+    TaskEntity task = taskRepository.findById(taskId).orElseThrow(() ->
+            new ResourceNotFoundException("Task with id : " + taskId + " not found !"));
+
+
+        if(request.getStatus() != null) {
+            taskStatusTransition(task.getStatus() , request.getStatus());
+        }
+
+        if(request.getTitle() != null) {
+            task.setTitle(request.getTitle());
+        }
+
+        if (request.getDescription() != null) {
+            task.setDescription(request.getDescription());
+        }
+
+        if (request.getDueDate() != null) {
+            task.setDueDate(request.getDueDate());
+        }
+
+        if (request.getStatus() != null) {
+
+            task.setStatus(request.getStatus());
+        }
+
+        if (request.getPriority() != null) {
+            task.setPriority(request.getPriority());
+        }
+
+        return toResponse(task);
     }
 }

@@ -4,6 +4,7 @@ import com.api_task_management.common.advice.ApiResponse;
 import com.api_task_management.common.response.PageResponse;
 import com.api_task_management.task.dto.request.CreateTaskRequest;
 import com.api_task_management.task.dto.request.TaskFilterRequest;
+import com.api_task_management.task.dto.request.UpdateTaskRequest;
 import com.api_task_management.task.dto.response.TaskListResponse;
 import com.api_task_management.task.dto.response.TaskResponse;
 import com.api_task_management.task.service.TaskService;
@@ -139,6 +140,17 @@ public class TaskController {
 
 
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/tasks/{taskId}")
+    public ResponseEntity<ApiResponse<TaskResponse>> updateTask (@PathVariable Long taskId , @RequestBody @Valid UpdateTaskRequest request) {
+        TaskResponse task = taskService.updateTask(taskId , request);
+        ApiResponse<TaskResponse> response = new ApiResponse<>(
+                true,
+                "Task updated successfully !",
+                task
+        );
+        return  ResponseEntity.ok(response);
     }
 
 }
