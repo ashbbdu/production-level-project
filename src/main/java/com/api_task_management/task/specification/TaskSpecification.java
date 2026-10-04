@@ -3,6 +3,7 @@ package com.api_task_management.task.specification;
 import com.api_task_management.task.dto.request.TaskFilterRequest;
 import com.api_task_management.task.dto.type.TaskStatus;
 import com.api_task_management.task.entity.TaskEntity;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -42,6 +43,12 @@ public class TaskSpecification {
                         .equal(root.get("priority"),
                                 filter.getPriority()
                         ));
+            }
+
+            if (!Long.class.equals(query.getResultType())
+                    && !long.class.equals(query.getResultType())) {
+
+                root.fetch("project", JoinType.INNER);
             }
 
             return criteriaBuilder.and(

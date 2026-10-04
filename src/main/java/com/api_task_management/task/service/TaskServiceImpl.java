@@ -1,15 +1,14 @@
 package com.api_task_management.task.service;
 
-import com.api_task_management.common.advice.ApiResponse;
 import com.api_task_management.common.exception.BusinessException;
 import com.api_task_management.common.exception.ResourceNotFoundException;
 import com.api_task_management.common.response.PageResponse;
 import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.project.repository.ProjectRepository;
-import com.api_task_management.project.repository.ProjectSpecification;
 import com.api_task_management.task.constant.TaskSortFields;
 import com.api_task_management.task.dto.request.CreateTaskRequest;
 import com.api_task_management.task.dto.request.TaskFilterRequest;
+import com.api_task_management.task.dto.response.TaskListResponse;
 import com.api_task_management.task.dto.response.TaskResponse;
 import com.api_task_management.task.entity.TaskEntity;
 import com.api_task_management.task.repository.TaskRepository;
@@ -47,7 +46,7 @@ public class TaskServiceImpl implements TaskService {
         response.setDueDate(task.getDueDate());
         response.setCreatedAt(task.getCreatedAt());
         response.setUpdatedAt(task.getUpdatedAt());
-//        response.setProjectId(task.getProject().getId());
+        response.setProjectId(task.getProject().getId());
 
         return response;
     }
@@ -114,60 +113,75 @@ public class TaskServiceImpl implements TaskService {
 //        return pr;
 //    }
 
-    @Override
-    public PageResponse<TaskResponse> getTasksByProjectId(Long projectId , Pageable pageable , TaskFilterRequest filter) {
-
-        if (pageable.getPageSize() > 100) {
-            throw new BusinessException(
-                    "Page size cannot exceed 100"
-            );
-        }
-
-        validateSort(pageable);
-
-        ProjectEntity projects = projectRepository.findById(projectId).orElseThrow(() ->
-                new ResourceNotFoundException("Not found")
-        );
-
-
-
-
-
-
-//        Pageable pageable = PageRequest.of(page, size);
-//        List<TaskEntity> tasks = projects.getTasks();
-
-//        now to support specification we need to pass specification instead of projectId;
-//        Page<TaskEntity> tasks = taskRepository.findByProjectId(projectId , pageable);
-        Specification<TaskEntity> specification =
-                TaskSpecification.filter(projectId , filter);
-//        Page<TaskEntity> tasks = taskRepository.findByProjectId(specification , pageable);
-
-//        not using findByProjectId because it does not support specification
-        Page<TaskEntity> tasks = taskRepository.findAll(specification , pageable);
+//    @Override
+//    public PageResponse<TaskResponse> getTasksByProjectId(Long projectId , Pageable pageable , TaskFilterRequest filter) {
 //
-//        Page<TaskEntity> taskPage = new PageImpl<>(
-//                tasks,
-//                pageable,
-//                tasks.size()
-//        );
-
-//        List<TaskEntity> tasks1 = taskRepository.findAll();
-
-//        List<TaskEntity> tasks1 = taskRepository.findAllTasks();
-//
-//        for (TaskEntity task : tasks1) {
-//            System.out.println(task.getProject().getName() + " : " + task.getTitle()) ;
+//        if (pageable.getPageSize() > 100) {
+//            throw new BusinessException(
+//                    "Page size cannot exceed 100"
+//            );
 //        }
-
-
-        List<TaskResponse> response = new ArrayList<>();
-        for (var t : tasks) {
-            System.out.println(t.getProject().getName() + " project Namemmemme");
-            response.add(toResponse(t));
-        }
-
-//        PageResponse<TaskResponse> pr = new PageResponse<>(
+//
+//        validateSort(pageable);
+//
+//        ProjectEntity projects = projectRepository.findById(projectId).orElseThrow(() ->
+//                new ResourceNotFoundException("Not found")
+//        );
+//
+//
+//
+//
+//
+//
+////        Pageable pageable = PageRequest.of(page, size);
+////        List<TaskEntity> tasks = projects.getTasks();
+//
+////        now to support specification we need to pass specification instead of projectId;
+////        Page<TaskEntity> tasks = taskRepository.findByProjectId(projectId , pageable);
+//        Specification<TaskEntity> specification =
+//                TaskSpecification.filter(projectId , filter);
+////        Page<TaskEntity> tasks = taskRepository.findByProjectId(specification , pageable);
+//
+////        not using findByProjectId because it does not support specification
+//        Page<TaskEntity> tasks = taskRepository.findAll(specification , pageable);
+//
+//
+////
+////        Page<TaskEntity> taskPage = new PageImpl<>(
+////                tasks,
+////                pageable,
+////                tasks.size()
+////        );
+//
+////        List<TaskEntity> tasks1 = taskRepository.findAll();
+//
+////        List<TaskEntity> tasks1 = taskRepository.findAllTasks();
+////
+////        for (TaskEntity task : tasks1) {
+////            System.out.println(task.getProject().getName() + " : " + task.getTitle()) ;
+////        }
+//
+//
+//        List<TaskResponse> response = new ArrayList<>();
+//        for (var t : tasks) {
+////            System.out.println(t.getProject().getName() + " project Namemmemme");
+//            response.add(toResponse(t));
+//        }
+//
+//
+//
+////        PageResponse<TaskResponse> pr = new PageResponse<>(
+////                response,
+////                tasks.getNumber(),
+////                tasks.getSize(),
+////                tasks.getTotalElements(),
+////                tasks.getTotalPages(),
+////                tasks.hasNext(),
+////                tasks.hasPrevious()
+////
+////
+////        );
+//        return new PageResponse<>(
 //                response,
 //                tasks.getNumber(),
 //                tasks.getSize(),
@@ -178,18 +192,51 @@ public class TaskServiceImpl implements TaskService {
 //
 //
 //        );
-        return new PageResponse<>(
-                response,
-                tasks.getNumber(),
-                tasks.getSize(),
-                tasks.getTotalElements(),
-                tasks.getTotalPages(),
-                tasks.hasNext(),
-                tasks.hasPrevious()
+//    }
 
+@Override
+@Transactional(readOnly = true)
+public PageResponse<TaskListResponse> getTasksByProjectId(
+        Long projectId,
+        Pageable pageable,
+        TaskFilterRequest filter
+) {
 
+    if (pageable.getPageSize() > 100) {
+        throw new BusinessException(
+                "Page size cannot exceed 100"
         );
     }
+
+    validateSort(pageable);
+
+    projectRepository.findById(projectId)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException(
+                            "Project with id : " + projectId + " not found"
+                    )
+            );
+
+    Page<TaskListResponse> tasks =
+            taskRepository.findTaskList(
+                    projectId,
+                    filter,
+                    pageable
+            );
+
+    List<TaskListResponse> response =
+            new ArrayList<>(tasks.getContent());
+
+    return new PageResponse<>(
+            response,
+            tasks.getNumber(),
+            tasks.getSize(),
+            tasks.getTotalElements(),
+            tasks.getTotalPages(),
+            tasks.hasNext(),
+            tasks.hasPrevious()
+    );
+}
 
     @Transactional(readOnly = true)
     public void testNPlusOne() {
@@ -202,5 +249,64 @@ public class TaskServiceImpl implements TaskService {
                             task.getProject().getName()
             );
         }
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<TaskResponse> getTasksUsingEntityGraph(
+            Long projectId,
+            Pageable pageable,
+            TaskFilterRequest filter
+    ) {
+
+//    do sorting validation
+        Specification<TaskEntity> specification =
+                TaskSpecification.filter(projectId , filter);
+        Page<TaskEntity> tasks =
+                taskRepository.findAll(
+                        specification,
+                        pageable
+                );
+
+        List<TaskResponse> response = tasks.getContent()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+
+        return new PageResponse<>(
+                response,
+                tasks.getNumber(),
+                tasks.getSize(),
+                tasks.getTotalElements(),
+                tasks.getTotalPages(),
+                tasks.hasNext(),
+                tasks.hasPrevious()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public PageResponse<TaskResponse> testBatchFetching(Long projectId, Pageable pageable , TaskFilterRequest filter) {
+
+        Page<TaskEntity> tasks =
+                taskRepository.findAll(
+                        TaskSpecification.filter(projectId , filter),
+                        pageable
+                );
+
+        List<TaskResponse> response =
+                tasks.getContent()
+                        .stream()
+                        .map(this::toResponse)
+                        .toList();
+
+        return new PageResponse<TaskResponse>(
+                response,
+                tasks.getNumber(),
+                tasks.getSize(),
+                tasks.getTotalElements(),
+                tasks.getTotalPages(),
+                tasks.hasNext(),
+                tasks.hasPrevious()
+        );
     }
 }

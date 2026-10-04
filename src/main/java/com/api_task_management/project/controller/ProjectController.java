@@ -8,6 +8,7 @@ import com.api_task_management.project.dto.request.UpdateProjectRequest;
 import com.api_task_management.project.dto.response.ProjectResponse;
 import com.api_task_management.project.dto.type.ProjectStatus;
 import com.api_task_management.project.entity.ProjectEntity;
+import com.api_task_management.project.repository.ProjectRepository;
 import com.api_task_management.project.service.ProjectService;
 import jakarta.validation.Valid;
 import lombok.Getter;
@@ -21,12 +22,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/projects")
 public class ProjectController {
     private final ProjectService projectService;
+    private final ProjectRepository projectRepository;
 
     @PostMapping
     public ResponseEntity<ApiResponse<ProjectResponse>> createProject (@RequestBody @Valid CreateProjectRequest request) {
@@ -86,4 +89,84 @@ public class ProjectController {
 //        ApiResponse<ProjectResponse> response = new ApiResponse<>(true , "Project Updated Successfully !" ,updatedProject);
         return new ApiResponse<>(true , "Project Updated Successfully !" ,updatedProject);
     }
+
+
+
+
+
+
+    @GetMapping("/learning/project-tasks")
+    public ResponseEntity<ApiResponse<PageResponse<ProjectResponse>>> testProjectTaskFetch(
+            @PageableDefault(size = 2) Pageable pageable
+    ) {
+
+        PageResponse<ProjectResponse> projects = projectService.testProjectTaskFetch(pageable);
+
+
+
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Projects fetched testProjectTaskFetch",
+                projects
+        ));
+    }
+
+    //    this one is using 2 query solution
+
+    @GetMapping("/learning/project-tasks-two-query")
+    public ResponseEntity<ApiResponse<PageResponse<ProjectResponse>>>
+    testProjectTaskFetchTwoQuery(
+            @ModelAttribute ProjectFilterRequest filter,
+            @PageableDefault(
+                    size = 10,
+                    sort = "id",
+                    direction = Sort.Direction.DESC
+            )
+            Pageable pageable
+    ) {
+
+        PageResponse<ProjectResponse> projects =
+                projectService.testProjectTaskFetchTwoQuery(
+                        filter,
+                        pageable
+                );
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        true,
+                        "Projects fetched using two-query approach",
+                        projects
+                )
+        );
+    }
+
+//    entity graph with 2 query approach
+
+
+    @GetMapping("/learning/project-tasks-two-query-entity-graph")
+    public ResponseEntity<ApiResponse<PageResponse<ProjectResponse>>>
+    testProjectEntityGraph(
+            @ModelAttribute ProjectFilterRequest filter,
+            @PageableDefault(
+                    size = 10,
+                    sort = "id",
+                    direction = Sort.Direction.DESC
+            )
+            Pageable pageable
+    ) {
+
+        PageResponse<ProjectResponse> projects =
+                projectService.testProjectEntityGraph(
+                        pageable
+                );
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        true,
+                        "Projects fetched using two-query approach",
+                        projects
+                )
+        );
+    }
+
 }

@@ -13,6 +13,9 @@ import com.api_task_management.project.dto.type.ProjectStatus;
 import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.project.repository.ProjectRepository;
 import com.api_task_management.project.repository.ProjectSpecification;
+import com.api_task_management.task.dto.request.TaskRequestProject;
+import com.api_task_management.task.entity.TaskEntity;
+import com.api_task_management.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,16 +24,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService{
     private final ProjectRepository projectRepository;
+    private final TaskRepository taskRepository;
 
 
 
-    private ProjectResponse toResponse(ProjectEntity project) {
+
+    private ProjectResponse toProjectResponse(ProjectEntity project) {
         ProjectResponse response = new ProjectResponse();
         response.setId(project.getId());
         response.setName(project.getName());
@@ -42,6 +49,36 @@ public class ProjectServiceImpl implements ProjectService{
         response.setUpdatedAt(project.getUpdatedAt());
 
         return response;
+    }
+
+    private ProjectResponse toResponse(ProjectEntity project) {
+        ProjectResponse response = new ProjectResponse();
+        response.setId(project.getId());
+        response.setName(project.getName());
+        response.setDescription(project.getDescription());
+        response.setStatus(project.getStatus());
+        response.setStartDate(project.getStartDate());
+        response.setEndDate(project.getEndDate());
+        response.setCreatedAt(project.getCreatedAt());
+        response.setUpdatedAt(project.getUpdatedAt());
+        response.setTasks(project.getTasks().stream().map(this::toProjectTaskResponse).toList());
+
+        return response;
+    }
+
+    private TaskRequestProject toProjectTaskResponse(TaskEntity task) {
+        TaskRequestProject request = new TaskRequestProject();
+        request.setId(task.getId());
+        request.setTitle(task.getTitle());
+        request.setDescription(task.getDescription());
+        request.setStatus(task.getStatus());
+        request.setPriority(task.getPriority());
+        request.setDueDate(task.getDueDate());
+        request.setCreatedAt(task.getCreatedAt());
+        request.setUpdatedAt(task.getUpdatedAt());
+
+        return request;
+
     }
 
 
@@ -301,6 +338,8 @@ public PageResponse<ProjectResponse> getAllProjects (ProjectFilterRequest filter
         return toResponse(project);
     }
 
+
+
     private void validatePagination(Pageable pageable) {
 
         if (pageable.getPageSize() > 100) {
@@ -309,5 +348,130 @@ public PageResponse<ProjectResponse> getAllProjects (ProjectFilterRequest filter
             );
         }
     }
+
+
+//    working/learning on pagination , sorting ,
+
+
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<ProjectResponse> testProjectTaskFetch(Pageable pageable) {
+
+        Page<ProjectEntity> projects =  projectRepository.findProjectsWithTasks(pageable);
+
+        List<ProjectResponse> projectList = projects.stream().map(this::toResponse).toList();
+
+        PageResponse<ProjectResponse> response = new PageResponse<>(
+                projectList,
+                projects.getNumber(),
+                projects.getSize(),
+                projects.getTotalElements(),
+                projects.getTotalPages(),
+                projects.hasNext(),
+                projects.hasPrevious()
+        );
+
+        return response;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<ProjectResponse> testProjectTaskFetchTwoQuery(
+            ProjectFilterRequest filter,
+            Pageable pageable
+    ) {
+
+//    add startdate can not be after enddate logic and validateSort logic
+//    also add filters here
+
+//        Specification<ProjectEntity> specification =
+//                ProjectSpecification.filter(filter);
+
+        Page<ProjectEntity> projects =
+                projectRepository.findAll(ProjectSpecification.filter(filter) , pageable);
+
+        // We will implement Query 2 here next.
+
+        List<Long> projectIds = projects.getContent()
+                .stream().map(ProjectEntity::getId).toList();
+
+//        if the projects are 0 in the requested page
+
+        List<TaskEntity> tasks = projectIds.isEmpty()
+                ? List.of()
+                : taskRepository.findByProjectIdIn(projectIds);
+
+//        List<TaskEntity> tasks = taskRepository.findByProjectIdIn(projectIds);
+
+
+
+        Map<Long, List<TaskEntity>> tasksByProject =
+                tasks.stream()
+                        .collect(Collectors.groupingBy(
+                                task -> task.getProject().getId()
+                        ));
+
+//        Build ProjectResponse
+        List<ProjectResponse> projectList =
+                projects.getContent()
+                        .stream()
+                        .map(project -> {
+
+                            ProjectResponse response =
+//                                    toResponse(project);
+                                    toProjectResponse(project);
+
+                            List<TaskRequestProject> projectTasks =
+                                    tasksByProject.getOrDefault(
+                                                    project.getId(),
+                                                    List.of()
+                                            )
+                                            .stream()
+                                            .map(this::toProjectTaskResponse)
+                                            .toList();
+
+                            response.setTasks(projectTasks);
+
+                            return response;
+                        })
+                        .toList();
+
+        return new PageResponse<>(
+                projectList,
+                projects.getNumber(),
+                projects.getSize(),
+                projects.getTotalElements(),
+                projects.getTotalPages(),
+                projects.hasNext(),
+                projects.hasPrevious()
+        );
+    }
+
+
+//    using Entity Graph with 2 query approach
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<ProjectResponse> testProjectEntityGraph(Pageable pageable) {
+
+        Page<ProjectEntity> projects =  projectRepository.findProjectsWithTasksUsingEntityGraph(pageable);
+
+        List<ProjectResponse> projectList = projects.stream().map(this::toResponse).toList();
+
+        PageResponse<ProjectResponse> response = new PageResponse<>(
+                projectList,
+                projects.getNumber(),
+                projects.getSize(),
+                projects.getTotalElements(),
+                projects.getTotalPages(),
+                projects.hasNext(),
+                projects.hasPrevious()
+        );
+
+        return response;
+    }
+
 
 }
