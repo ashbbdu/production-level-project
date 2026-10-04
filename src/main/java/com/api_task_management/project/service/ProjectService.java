@@ -9,6 +9,7 @@ import com.api_task_management.project.dto.type.ProjectStatus;
 import com.api_task_management.project.entity.ProjectEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -19,4 +20,13 @@ public interface ProjectService {
 //    public PageResponse<ProjectResponse> getAllProjects(String name , ProjectStatus status , Pageable pageable) ;
 public PageResponse<ProjectResponse> getAllProjects(ProjectFilterRequest filter , Pageable pageable) ;
 public ProjectResponse updateProject (Long projectId , UpdateProjectRequest request);
+
+    public PageResponse<ProjectResponse>testProjectTaskFetch(Pageable pageable);
+
+
+//    two query solution
+    PageResponse<ProjectResponse> testProjectTaskFetchTwoQuery(ProjectFilterRequest filter, Pageable pageable);
+
+
+    PageResponse<ProjectResponse> testProjectEntityGraph(Pageable pageable);
 }

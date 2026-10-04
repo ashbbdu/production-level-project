@@ -4,6 +4,7 @@ import com.api_task_management.common.advice.ApiResponse;
 import com.api_task_management.common.response.PageResponse;
 import com.api_task_management.task.dto.request.CreateTaskRequest;
 import com.api_task_management.task.dto.request.TaskFilterRequest;
+import com.api_task_management.task.dto.response.TaskListResponse;
 import com.api_task_management.task.dto.response.TaskResponse;
 import com.api_task_management.task.service.TaskService;
 import jakarta.validation.Valid;
@@ -57,7 +58,8 @@ public class TaskController {
     }
 
     @GetMapping(path = "/projects/{projectId}/tasks")
-    public ResponseEntity<ApiResponse<PageResponse<TaskResponse>>> getTasksByProjectId
+//    public ResponseEntity<ApiResponse<PageResponse<TaskResponse>>> getTasksByProjectId
+    public ResponseEntity<ApiResponse<PageResponse<TaskListResponse>>> getTasksByProjectId
             (@PathVariable Long projectId ,
 //             @RequestParam(defaultValue = "0") int page,
 //             @RequestParam(defaultValue = "10") int size
@@ -66,7 +68,9 @@ public class TaskController {
             ) {
 
 //        PageResponse<TaskResponse> tasks = taskService.getTasksByProjectId(projectId , pageable.getPageNumber() , pageable.getPageSize());
-        PageResponse<TaskResponse> tasks = taskService.getTasksByProjectId(projectId , pageable , filter);
+//        PageResponse<TaskResponse> tasks = taskService.getTasksByProjectId(projectId , pageable , filter);
+
+        PageResponse<TaskListResponse> tasks = taskService.getTasksByProjectId(projectId , pageable , filter);
 
 
 //        System.out.println(filter.getPriority() + " " + filter.getStatus());
@@ -81,6 +85,60 @@ public class TaskController {
     @GetMapping(path = "/testNPlusOne")
     public void testNPlusOne() {
         taskService.testNPlusOne();
+    }
+
+    @GetMapping("/learning/entity-graph/projects/{projectId}/tasks")
+    public ResponseEntity<ApiResponse<PageResponse<TaskResponse>>>
+    getTasksUsingEntityGraph(
+            @PathVariable Long projectId,
+            @PageableDefault(
+                    size = 10,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            )
+            Pageable pageable,
+            TaskFilterRequest filter
+    ) {
+
+        PageResponse<TaskResponse> tasks =
+                taskService.getTasksUsingEntityGraph(
+                        projectId,
+                        pageable,
+                        filter
+                );
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        true,
+                        "Tasks fetched using EntityGraph",
+                        tasks
+                )
+        );
+    }
+
+    @GetMapping("/learning/batch-fetch/projects/{projectId}/tasks")
+    public ResponseEntity<ApiResponse<PageResponse<TaskResponse>>> testBatchFetching(@PathVariable Long projectId, Pageable pageable,  @PageableDefault(
+                                                                                                 size = 10,
+                                                                                                 sort = "createdAt",
+                                                                                                 direction = Sort.Direction.DESC
+                                                                                         )
+
+                                                                                     TaskFilterRequest filter) {
+
+
+
+
+        PageResponse<TaskResponse> resp = taskService.testBatchFetching(projectId, pageable ,filter);
+
+                ApiResponse<PageResponse<TaskResponse>> response = new ApiResponse<PageResponse<TaskResponse> >(
+                        true,
+                        "Batch fetching test completed",
+                        resp
+                );
+
+
+
+        return ResponseEntity.ok(response);
     }
 
 }
