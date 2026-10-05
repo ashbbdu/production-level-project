@@ -1,5 +1,6 @@
 package com.api_task_management.task.entity;
 
+import com.api_task_management.comment.entity.CommentEntity;
 import com.api_task_management.project.entity.ProjectEntity;
 import com.api_task_management.task.dto.type.TaskPriority;
 import com.api_task_management.task.dto.type.TaskStatus;
@@ -12,6 +13,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "tasks")
@@ -53,5 +55,10 @@ public class TaskEntity {
     @JoinColumn(name = "project_id" , nullable = false)
 //    @BatchSize(size = 10)
     private ProjectEntity project;
+
+
+//    Comment
+    @OneToMany(mappedBy = "task" , orphanRemoval = true)
+    private List<CommentEntity> comments;
 
 }
