@@ -28,7 +28,7 @@ public class CommentEntity {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false , fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id" , nullable = false)
     private TaskEntity task;
 
