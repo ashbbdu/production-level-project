@@ -28,6 +28,8 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
+
+
     @Override
     public UserResponse createUser(CreateUserRequest request) {
         if(userRepository.existsByEmail(request.getEmail())) {
@@ -48,6 +50,8 @@ public class UserServiceImpl implements UserService {
 
          return toResponse(savedUser);
     }
+
+
 
 
 }

@@ -2,6 +2,7 @@ package com.api_task_management.common.advice;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
