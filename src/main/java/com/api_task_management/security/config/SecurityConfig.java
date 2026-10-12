@@ -1,5 +1,8 @@
 package com.api_task_management.security.config;
 
+import com.api_task_management.security.jwt.CustomAccessDeniedHandler;
+import com.api_task_management.security.jwt.CustomAuthenticationEntryPoint;
+import com.api_task_management.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -7,11 +10,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,51 +21,51 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 @EnableWebSecurity
-public class SecurityConfig {
 
-//    In memory user detailsservice
-@Bean
-public AuthenticationProvider authenticationProvider(
-        @Qualifier("users") UserDetailsService userDetailsService,
-        PasswordEncoder passwordEncoder) {
+public class SecurityConfig  {
 
-    DaoAuthenticationProvider provider =
-            new DaoAuthenticationProvider(userDetailsService);
-
-    provider.setPasswordEncoder(passwordEncoder);
-
-    return provider;
-}
+private final JwtAuthenticationFilter jwtAuthenticationFilter;
+private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+private final CustomAccessDeniedHandler customAccessDeniedHandler;
+//    lets you control exactly which UserDetailsService and PasswordEncoder the provider uses. we have created this when we had in memory and db users
+//@Bean
+//public AuthenticationProvider authenticationProvider(
+//        @Qualifier("customUserDetailsService") UserDetailsService userDetailsService,
+//        PasswordEncoder passwordEncoder) {
+//
+//    DaoAuthenticationProvider provider =
+//            new DaoAuthenticationProvider(userDetailsService);
+//
+//    provider.setPasswordEncoder(passwordEncoder);
+//
+//    return provider;
+//}
     @Bean
     public PasswordEncoder passwordEncoder () {
         return new BCryptPasswordEncoder();
     }
 
-
-
     @Bean
-    public SecurityFilterChain filter (HttpSecurity http , AuthenticationProvider authenticationProvider) {
-//        http
-//
-//                .httpBasic(AbstractHttpConfigurer::disable)
-//                .formLogin(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(auth ->
-//                        auth.requestMatchers("/api/auth/user/**")
-//                        .permitAll().anyRequest().authenticated())
-////                authenticationProvider(authenticationProvider)
-//                ;
-//
-//
-//        return http.build();
+    public SecurityFilterChain filter (HttpSecurity http) {
+
         http
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(basic -> basic.disable())
                 .formLogin(form -> form.disable())
-                .authenticationProvider(authenticationProvider)
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
+//                .authenticationProvider(authenticationProvider)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .addFilterBefore(jwtAuthenticationFilter , UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/user/**").permitAll()
                         .anyRequest().authenticated()
@@ -73,7 +75,7 @@ public AuthenticationProvider authenticationProvider(
     }
 
 
-    @Bean
+//    @Bean
     public UserDetailsService users (PasswordEncoder passwordEncoder) {
         UserDetails admin = User.builder()
                 .username("admin@yopmail.com")
