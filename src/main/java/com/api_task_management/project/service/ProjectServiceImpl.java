@@ -61,8 +61,7 @@ public class ProjectServiceImpl implements ProjectService{
         response.setEndDate(project.getEndDate());
         response.setCreatedAt(project.getCreatedAt());
         response.setUpdatedAt(project.getUpdatedAt());
-        response.setTasks(project.getTasks().stream().map(this::toProjectTaskResponse).toList());
-
+        response.setTasks(project.getTasks() != null ? project.getTasks().stream().map(this::toProjectTaskResponse).toList() : null);
         return response;
     }
 

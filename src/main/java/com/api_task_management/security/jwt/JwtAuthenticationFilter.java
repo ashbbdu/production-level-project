@@ -243,6 +243,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+
         String email = claims.getSubject();
 
         if (email == null || email.isBlank()) {
@@ -267,8 +268,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final UserDetails user;
 
+
         try {
             user = userDetailsService.loadUserByUsername(email);
+            System.out.println(user.getAuthorities() + " authorities");
 
         } catch (UsernameNotFoundException ex) {
             writeUnauthorized(request, response, "User not found");

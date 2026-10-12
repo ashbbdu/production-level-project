@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -23,6 +24,7 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/tasks/{taskId}/comments")
+    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER' , 'USER')")
     public ResponseEntity<ApiResponse<CommentResponse>> createComment
             (@RequestBody @Valid CreateCommentRequest request , @PathVariable Long taskId) {
         CommentResponse comment = commentService.createComment(request ,taskId);
@@ -43,6 +45,7 @@ public class CommentController {
     }
 
     @GetMapping("/tasks/comment/{commentId}")
+    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER' , 'USER')")
     public ResponseEntity<ApiResponse<CommentResponse>> createComment
             (@PathVariable Long commentId) {
         CommentResponse comment = commentService.getCommentById(commentId);
@@ -57,6 +60,7 @@ public class CommentController {
     }
 
     @GetMapping("/tasks/{taskId}/comments")
+    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER' , 'USER')")
     public ResponseEntity<ApiResponse<PageResponse<CommentResponse>>> getCommentsByTask
             (@PathVariable Long taskId , @PageableDefault(size = 10 , page = 0) Pageable pageable) {
         PageResponse<CommentResponse> comments = commentService.getCommentsByTask(taskId , pageable);
@@ -73,6 +77,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comment/delete/{commentId}")
+    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER')")
     public ResponseEntity<Void> deleteComment (@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
 //        ApiResponse<?> response = new  ApiResponse<>(

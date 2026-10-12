@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 @Component
 @RequiredArgsConstructor
+
+//URL-level authorization happens in the Spring Security filter chain. Its exception-handling mechanism can invoke CustomAccessDeniedHandler.
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     private final SecurityErrorResponseWriter errorResponseWriter;
     @Override

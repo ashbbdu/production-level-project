@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -29,6 +30,7 @@ public class TaskController {
     private final TaskService taskService;
 
     @PostMapping(path = "/{projectId}/tasks")
+    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER')")
     public ResponseEntity<ApiResponse<TaskResponse>> createTask (@RequestBody @Valid CreateTaskRequest request, @PathVariable Long projectId) {
         TaskResponse task = taskService.createTask(request, projectId);
         ApiResponse<TaskResponse> response = new ApiResponse<>(
@@ -48,6 +50,7 @@ public class TaskController {
     }
 
     @GetMapping(path = "/tasks/{taskId}")
+    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER' , 'USER')")
     public ResponseEntity<ApiResponse<TaskResponse>> getTaskById (@PathVariable Long taskId) {
         TaskResponse task = taskService.getTaskById(taskId);
         ApiResponse<TaskResponse> response = new ApiResponse<>(
@@ -60,6 +63,7 @@ public class TaskController {
 
     @GetMapping(path = "/projects/{projectId}/tasks")
 //    public ResponseEntity<ApiResponse<PageResponse<TaskResponse>>> getTasksByProjectId
+    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER' , 'USER')")
     public ResponseEntity<ApiResponse<PageResponse<TaskListResponse>>> getTasksByProjectId
             (@PathVariable Long projectId ,
 //             @RequestParam(defaultValue = "0") int page,
@@ -143,6 +147,7 @@ public class TaskController {
     }
 
     @PatchMapping("/tasks/{taskId}")
+    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER')")
     public ResponseEntity<ApiResponse<TaskResponse>> updateTask (@PathVariable Long taskId , @RequestBody @Valid UpdateTaskRequest request) {
         TaskResponse task = taskService.updateTask(taskId , request);
         ApiResponse<TaskResponse> response = new ApiResponse<>(
