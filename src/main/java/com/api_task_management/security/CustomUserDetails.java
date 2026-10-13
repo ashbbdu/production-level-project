@@ -1,11 +1,13 @@
 package com.api_task_management.security;
 
+import com.api_task_management.permission.entity.PermissionEntity;
 import com.api_task_management.user.dto.type.UserRole;
 import com.api_task_management.user.entity.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,9 +21,18 @@ public class CustomUserDetails implements UserDetails {
 
    @Override
    public Collection<? extends GrantedAuthority> getAuthorities() {
-      UserRole role = user.getRole();
-      if(role == null) return List.of();
-      return List.of(new SimpleGrantedAuthority("ROLE_"+ role.toString()));
+      List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+      if (user.getRole() != null) {
+         authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().toString()));
+      }
+
+      for (PermissionEntity permission : user.getPermissions()) {
+         authorities.add(new SimpleGrantedAuthority(permission.getName()));
+      }
+
+      return authorities;
+
    }
 
    @Override

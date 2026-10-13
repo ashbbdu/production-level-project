@@ -1,6 +1,7 @@
 package com.api_task_management.user.repository;
 
 import com.api_task_management.user.entity.UserEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -8,4 +9,9 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserEntity , Long> {
     Optional<UserEntity> findByEmail(String email);
     boolean existsByEmail(String email);
+
+    @EntityGraph(attributePaths = "permissions")
+    Optional<UserEntity> findWithPermissionsByEmail(String email);
 }
+
+

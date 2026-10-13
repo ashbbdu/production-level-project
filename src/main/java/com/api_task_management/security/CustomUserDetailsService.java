@@ -16,7 +16,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 //        return (UserDetails) userRepository.findByEmail(username); this is casting but we are using our Custom service
-        UserEntity user = userRepository.findByEmail(username).orElseThrow(() ->
+        UserEntity user = userRepository.findWithPermissionsByEmail(username).orElseThrow(() ->
                     new UsernameNotFoundException("User with email : " + username + " not found !")
                 );
         return new CustomUserDetails(user);

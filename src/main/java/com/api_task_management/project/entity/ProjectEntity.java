@@ -2,6 +2,7 @@ package com.api_task_management.project.entity;
 
 import com.api_task_management.project.dto.type.ProjectStatus;
 import com.api_task_management.task.entity.TaskEntity;
+import com.api_task_management.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,4 +52,8 @@ public class ProjectEntity {
     )
     private List<TaskEntity> tasks;
 
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "created_by", nullable = false)
+    private UserEntity createdBy;
 }

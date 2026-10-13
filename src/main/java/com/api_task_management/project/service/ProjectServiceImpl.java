@@ -16,9 +16,13 @@ import com.api_task_management.project.repository.ProjectSpecification;
 import com.api_task_management.task.dto.request.TaskRequestProject;
 import com.api_task_management.task.entity.TaskEntity;
 import com.api_task_management.task.repository.TaskRepository;
+import com.api_task_management.user.entity.UserEntity;
+import com.api_task_management.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +37,7 @@ import java.util.stream.Collectors;
 public class ProjectServiceImpl implements ProjectService{
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
 
 
 
@@ -130,12 +135,23 @@ public class ProjectServiceImpl implements ProjectService{
             throw new BusinessException("End date can not be before start date !");
         }
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        assert authentication != null;
+        UserEntity currentUser = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Authenticated user not found"));
+
+
+        System.out.println(authentication.getName() + " current user");
+
         ProjectEntity project = new ProjectEntity();
         project.setName(request.getName());
         project.setDescription(request.getDescription());
         project.setStartDate(request.getStartDate());
         project.setEndDate(request.getEndDate());
         project.setStatus(ProjectStatus.PLANNED); // not required here because we are setting this as PLANNED by default in the Entity
+        project.setCreatedBy(currentUser);
 
         ProjectEntity savedProject = projectRepository.save(project);
 

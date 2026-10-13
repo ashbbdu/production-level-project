@@ -1,0 +1,2 @@
+ALTER TABLE projects
+ADD COLUMN created_by BIGINT NULL;
