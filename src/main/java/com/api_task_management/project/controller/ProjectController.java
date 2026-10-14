@@ -33,7 +33,8 @@ public class ProjectController {
     private final ProjectRepository projectRepository;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('CREATE_PROJECT')")
     public ResponseEntity<ApiResponse<ProjectResponse>> createProject (@RequestBody @Valid CreateProjectRequest request) {
         ProjectResponse response = projectService.createProject(request);
         URI location = ServletUriComponentsBuilder
@@ -66,6 +67,7 @@ public class ProjectController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER' , 'USER')")
+//    @PreAuthorize("hasAnyAuthority('VIEW_PROJECT' , '')")
     public ApiResponse<PageResponse<ProjectResponse>> getAllProjects(
 //                @RequestParam(defaultValue = "0")  int page
 //            , @RequestParam(defaultValue = "10") int size)  instead of passing this getAllProjects(page , size) we will pass Pageable
@@ -87,7 +89,8 @@ public class ProjectController {
 
 
     @PatchMapping(path = "/{projectId}")
-    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('UPDATE_PROJECT')")
     public ApiResponse<ProjectResponse> updateProject (@PathVariable Long projectId ,
                                                                      @RequestBody @Valid UpdateProjectRequest request) {
         ProjectResponse updatedProject = projectService.updateProject(projectId , request);

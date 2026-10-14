@@ -286,7 +286,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             writeUnauthorized(
                     request,
                     response,
-                    "User account is not available"
+                    "Your account is disabled or inactive. Please contact the administrator."
             );
             return;
         }
