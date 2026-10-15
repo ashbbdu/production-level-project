@@ -143,5 +143,15 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(Long userId) {
+        UserEntity user = userRepository.findById(userId).orElseThrow(() ->
+                    new ResourceNotFoundException("User with id : " + userId + " does not exist !")
+                );
+
+        return toResponse(user);
+    }
+
 
 }

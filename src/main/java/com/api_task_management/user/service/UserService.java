@@ -17,5 +17,6 @@ public interface UserService {
     public UserResponse approveUser (Long userId , UserRole role);
     public UserResponse disableUser(Long userId);
     public PageResponse<UserResponse> getAllUsers (Pageable pageable , UserFilterRequest filter);
+    public UserResponse getUserById (Long userId);
 
 }
