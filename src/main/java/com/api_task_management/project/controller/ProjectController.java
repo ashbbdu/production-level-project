@@ -34,7 +34,7 @@ public class ProjectController {
 
     @PostMapping
 //    @PreAuthorize("hasAnyRole('ADMIN' , 'MANAGER')")
-    @PreAuthorize("hasAnyAuthority('CREATE_PROJECT')")
+    @PreAuthorize("hasRole('ADMIN') OR hasAnyAuthority('CREATE_PROJECT')")
     public ResponseEntity<ApiResponse<ProjectResponse>> createProject (@RequestBody @Valid CreateProjectRequest request) {
         ProjectResponse response = projectService.createProject(request);
         URI location = ServletUriComponentsBuilder

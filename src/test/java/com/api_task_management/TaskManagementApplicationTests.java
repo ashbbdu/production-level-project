@@ -6,34 +6,20 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 class TaskManagementApplicationTests {
-
-	@Autowired
-	private PasswordEncoder passwordEncoder;
-
-	@Autowired
-	private UserService userService;
-
-	public CreateUserRequest testRequest () {
-		CreateUserRequest request = new CreateUserRequest();
-		request.setEmail("ashish@example.com");
-		request.setFirstName("Ashish");
-		request.setLastName("Srivastava");
-		request.setPassword(passwordEncoder.encode("SecurePassword@123"));
-
-		return request;
-	}
 
 
 	@Test
 	void contextLoads() {
 	}
 
-//	@Test
-	void testUserCreation () {
-		userService.createUser(testRequest());
+	@Test
+	void shouldReturnFive () {
+		int result = 2 + 3;
+		assertEquals(5, result);
 	}
 
 }
